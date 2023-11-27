@@ -42,6 +42,7 @@ const userCollection = client.db("skillsurgeDB").collection("userCollection");
 const enrollmentCollection = client.db("skillsurgeDB").collection("enrollments");
 const paymentCollection = client.db("skillsurgeDB").collection("paymentAndClasses");
 const teacherRequestCollection = client.db("skillsurgeDB").collection("teacherRequest");
+const pendingClassRequestCollection = client.db("skillsurgeDB").collection("pendingClasses");
 
 
 
@@ -261,6 +262,7 @@ app.get("/users", verifyToken, verifyAdmin,  async (req, res) => {
 
   app.get("/users/student/:email", verifyToken, async (req, res) => {
     const email = req.params.email;
+    console.log('line 265' , req.decoded.email);
     if (email !== req.decoded.email) {
       return res.status(403).send({ message: "forbidden access" });
     }
@@ -349,6 +351,8 @@ app.patch("/users/teacherReject/:id", verifyToken, verifyAdmin, async (req, res)
   const result = await teacherRequestCollection.updateOne(filter, updatedDoc);
   res.send(result);
 });
+
+
 //adding the status:rejected in users main collection when admin clicks on the reject button
 app.patch("/users/rejectReq/:email", verifyToken, verifyAdmin, async (req, res) => {
   const email = req.params.email;
@@ -389,6 +393,158 @@ app.get("/beTeacher/:email",  async (req, res) => {
   
   res.send(user);
 });
+
+//teacher adding class which will be approved or rejected by the admin
+app.post("/pendingClasses", async (req, res) => {
+  const RequestedClass = req.body;
+  const result = await pendingClassRequestCollection.insertOne(RequestedClass);
+
+  console.log("RequestedClass info ", result);
+  res.send(result); 
+});
+
+//all pending classes for admin's all classes page
+app.get("/pendingClasses", verifyToken, verifyAdmin,  async (req, res) => {
+  // console.log(req.headers);
+  const result = await pendingClassRequestCollection.find().toArray();
+  res.send(result);
+});
+
+
+//updating status of the class when admin approves it in pendingRequestCollection  
+app.patch("/approveClass/:id", verifyToken, verifyAdmin, async (req, res) => {
+  const id = req.params.id; 
+  const filter = {_id: new ObjectId(id)}; 
+  const updatedDoc = {
+    $set: {
+      status: "accepted",
+    },
+  };
+
+  const result = await pendingClassRequestCollection.updateOne(filter, updatedDoc);
+  res.send(result);
+});
+
+app.post('/addClassToAllClasses', verifyToken ,verifyAdmin , async(req,res )=> {
+const addClassForm = req.body
+const result = await AllClassesCollection.insertOne(addClassForm)
+console.log('added' , result);
+res.send(result)
+
+})
+
+
+
+
+
+//teacher is getting all his pending classes 
+ 
+app.get("/myPendingClasses/:email", verifyToken, async (req, res) => {
+  const query = { email: req?.params?.email };
+  if (req.params.email !== req?.decoded?.email) {
+    return res.status(403).send({ message: "forbidden access" });
+  }
+  const result = await pendingClassRequestCollection.find(query).toArray();
+  res.send(result);
+});
+
+//getting specific data for teacher to use in the update form
+app.get("/myPendingClass/:id", async (req, res) => {
+  const id = req.params.id;
+  const query = { _id: new ObjectId(id) };
+  const result = await pendingClassRequestCollection.findOne(query);
+  if (result) {
+        res.send(result);
+  } else {
+    res.status(404).json({ message: "class not found" });
+  }
+});
+
+// let teacher delete any of his class
+app.delete("/deleteClass/:id", verifyToken,  async (req, res) => {
+  const id = req.params.id;
+  console.log('466 nmbr', id);
+  const query = { _id: new ObjectId(id) };
+  console.log('468 nmbr',query);
+  const result = await pendingClassRequestCollection.deleteOne(query);
+  res.send(result);
+});
+app.delete("/deleteFromAllClass/:id", verifyToken,  async (req, res) => {
+  const id = req.params.id;
+  console.log('474 nmbr',id);
+  const query = {classId: id };
+  console.log('476 nmbr',query);
+  const result = await AllClassesCollection.deleteOne(query);
+  res.send(result);
+});
+
+
+
+
+
+
+//changing the status from pending to rejected when admin clicks on the reject button
+app.patch("/pendingClasses/:id", verifyToken, verifyAdmin, async (req, res) => {
+  const id = req.params.id;
+  const filter = { _id: new ObjectId(id) };
+  const updatedDoc = {
+    $set: { 
+      status: 'rejected'
+    },
+  };
+
+  const result = await pendingClassRequestCollection.updateOne(filter, updatedDoc);
+  res.send(result);
+});
+//updating data in pendingClassCollection if teacher updates the class
+
+app.patch("/updateClass/:id", verifyToken,  async (req, res) => {
+  const id = req.params.id;
+  console.log(id);
+  const filter = { _id: new ObjectId(id) };
+  const query = req.body
+  console.log(query);
+  const updatedDoc = {
+    $set: { 
+      // name: query.name,
+      // photoURL: data.photoURL,
+      title: query.title,
+      price: query.price,
+      description: query.description,
+      // status: "pending",
+      image: query.image,
+      email: query?.email,
+    },
+  };
+
+  const result = await pendingClassRequestCollection.updateOne(filter, updatedDoc);
+  res.send(result);
+});
+
+//updating data in AllClassesCollection if teacher updates the class
+app.patch("/updateClassInAllClasses/:id", verifyToken,  async (req, res) => {
+  const id = req.params.id;
+  console.log(id);
+  const filter = { classId: id };
+  const query = req.body
+  console.log(query);
+  const updatedDoc = {
+    $set: { 
+      // name: query.name,
+      // photoURL: data.photoURL,
+      Title: query.title,
+      Price: query.price,
+      ShortDescription: query.description,
+      // status: "pending",
+      image: query.image,
+      email: query?.email,
+    },
+  };
+
+  const result = await AllClassesCollection.updateOne(filter, updatedDoc);
+  res.send(result);
+});
+
 
 
 
