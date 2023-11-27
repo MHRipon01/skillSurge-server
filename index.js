@@ -43,6 +43,9 @@ const enrollmentCollection = client.db("skillsurgeDB").collection("enrollments")
 const paymentCollection = client.db("skillsurgeDB").collection("paymentAndClasses");
 const teacherRequestCollection = client.db("skillsurgeDB").collection("teacherRequest");
 const pendingClassRequestCollection = client.db("skillsurgeDB").collection("pendingClasses");
+const assignmentCollection = client.db("skillsurgeDB").collection("assignments");
+const reviewCollection = client.db("skillsurgeDB").collection("reviews");
+const submittedAssignmentCollection = client.db("skillsurgeDB").collection("submitAssignment");
 
 
 
@@ -165,7 +168,14 @@ app.get("/payments/:email", verifyToken, async (req, res) => {
 });
 
 
-
+app.get('/enrolledClass/:id' ,async (req, res) => {
+  const id = req.params.id
+  const query = { _id: new ObjectId(id) };
+  console.log(query);
+ 
+  const result = await paymentCollection.find(query).toArray();
+  res.send(result);
+});
 
 
 
@@ -262,7 +272,7 @@ app.get("/users", verifyToken, verifyAdmin,  async (req, res) => {
 
   app.get("/users/student/:email", verifyToken, async (req, res) => {
     const email = req.params.email;
-    console.log('line 265' , req.decoded.email);
+    // console.log('line 265' , req.decoded.email);
     if (email !== req.decoded.email) {
       return res.status(403).send({ message: "forbidden access" });
     }
@@ -397,6 +407,7 @@ app.get("/beTeacher/:email",  async (req, res) => {
 //teacher adding class which will be approved or rejected by the admin
 app.post("/pendingClasses", async (req, res) => {
   const RequestedClass = req.body;
+  console.log(RequestedClass);
   const result = await pendingClassRequestCollection.insertOne(RequestedClass);
 
   console.log("RequestedClass info ", result);
@@ -427,6 +438,7 @@ app.patch("/approveClass/:id", verifyToken, verifyAdmin, async (req, res) => {
 
 app.post('/addClassToAllClasses', verifyToken ,verifyAdmin , async(req,res )=> {
 const addClassForm = req.body
+console.log(addClassForm);
 const result = await AllClassesCollection.insertOne(addClassForm)
 console.log('added' , result);
 res.send(result)
@@ -459,6 +471,13 @@ app.get("/myPendingClass/:id", async (req, res) => {
     res.status(404).json({ message: "class not found" });
   }
 });
+
+
+
+
+
+
+
 
 // let teacher delete any of his class
 app.delete("/deleteClass/:id", verifyToken,  async (req, res) => {
@@ -544,6 +563,161 @@ app.patch("/updateClassInAllClasses/:id", verifyToken,  async (req, res) => {
   const result = await AllClassesCollection.updateOne(filter, updatedDoc);
   res.send(result);
 });
+
+//teacher's adding assignment to the assignmentCollection
+app.post('/addAssignment' , async(req,res) => {
+const addAssignment = req.body
+console.log(addAssignment);
+const result = await assignmentCollection.insertOne(addAssignment)
+console.log('added' , result);
+res.send(result)
+
+})
+
+//student is getting assignment's which were added by teacher
+app.get('/assignments', async (req, res) => {
+  const className  = req.query;
+console.log(className);
+console.log("from 572 ",className);
+
+    
+    const assignments = await assignmentCollection.find(className).toArray();
+console.log(assignments);
+    res.send(assignments);
+ 
+});
+
+
+//student is submitting assignment 
+app.post("/submitAssignment", async (req, res) => {
+  const assignment = req.body;
+  const result = await submittedAssignmentCollection.insertOne(assignment);
+
+  console.log("result info ", result);
+  res.send({ result }); 
+});
+
+
+
+
+
+//getting the number how many assignment was submitted today by name
+app.get('/assignments/submissions-count/:className', async (req, res) => {
+  try {
+    const { className } = req.params;
+   
+    const today = new Date(); // This gives you the current date and time
+const dateOnly = today.toISOString().split('T')[0]; // Extracts only the date part (YYYY-MM-DD)
+// console.log(dateOnly); // Outputs: '2023-11-28'
+    const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0); // Start of the day
+    const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59); // End of the day
+// console.log(today ,startOfDay ,endOfDay);
+    const count = await submittedAssignmentCollection.countDocuments({
+      className,
+      date: dateOnly
+    });
+
+    res.json({ count });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+//counting the total enrollment from payment&pendingCollection 
+app.get('/totalEnrollment/:className' , async(req,res) =>{
+  try {
+    const { className } = req.params;
+    const count = await paymentCollection.countDocuments({
+      className
+    });
+    res.json({ count });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
+
+//counting the total assignment from assignmentCollection 
+app.get('/totalAssignments/:className' , async(req,res) =>{
+  try {
+    const { className } = req.params;
+    const count = await assignmentCollection.countDocuments({
+      className
+    });
+    res.json({ count });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
+
+
+
+
+
+
+//getting data for teacher when he giving assignment so that we can also send the className
+app.get("/myClassForAssignment/:id", async (req, res) => {
+  const id = req.params.id;
+  // console.log(id);
+  const query = { _id: new ObjectId(id) };
+
+  const result = await pendingClassRequestCollection.findOne(query);
+
+  // Check if the result exists
+  if (result) {
+        res.send(result);
+    
+  } else {
+    res.status(404).json({ message: "class not found" });
+  }
+});
+ 
+//add review as a student
+app.post("/addReview", async (req, res) => {
+  const review = req.body;
+  const reviewResult = await reviewCollection.insertOne(review);
+
+  console.log("Review info ", reviewResult);
+  res.send({ reviewResult }); 
+});
+
+
+//getting review to show on the homepage
+app.get('/allReviews/:name' ,async(req,res) =>  {
+  const className = req.params.name;
+  const query = {className: className };
+  const result = await reviewCollection.find(query).toArray()
+  res.send(result);
+})
+
+//getting data of all classes collection to get the name & search in reviewCollection with that name
+app.get("/getDataForReview/:id",   async (req, res) => {
+  const id = req.params.id;
+  const query = {classId: id };
+  const result = await AllClassesCollection.findOne(query)
+  res.send(result);
+});
+
+
+
+
+
+
+//getting review for the class with name which we got last api
+app.get("/reviews/:name", async (req, res) => {
+  const className = req.params.name; // Use req.params.name to get the parameter value
+  const query = { className: className };
+  const result = await reviewCollection.find(query).toArray();
+  res.send(result);
+});
+
+
+
+
+
 
 
 
