@@ -237,6 +237,16 @@ app.get("/users", verifyToken, verifyAdmin,  async (req, res) => {
   res.send(result);
 });
 
+//getting the only user's data from user database
+
+app.get("/users/:email", verifyToken,  async (req, res) => {
+  // console.log(req.headers);
+  const email = req.params.email
+  console.log(email);
+  const result = await userCollection.findOne({email})
+  console.log(result);
+  res.send(result);
+});
 
 
   app.get("/users/admin/:email", verifyToken, async (req, res) => {
@@ -704,10 +714,10 @@ app.post("/addReview", async (req, res) => {
 
 
 //getting review to show on the homepage
-app.get('/allReviews/:name' ,async(req,res) =>  {
-  const className = req.params.name;
-  const query = {className: className };
-  const result = await reviewCollection.find(query).toArray()
+app.get('/allReviews' ,async(req,res) =>  {
+  const className = req.params;
+  // const query = {className: className };
+  const result = await reviewCollection.find(className).toArray()
   res.send(result);
 })
 
