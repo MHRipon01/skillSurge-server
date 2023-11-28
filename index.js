@@ -651,6 +651,24 @@ app.get('/totalAssignments/:className' , async(req,res) =>{
   }
 });
 
+//searching user from all user's page 
+// API to search users by username/email
+app.get("/users/search", verifyToken, verifyAdmin, async (req, res) => {
+  const { searchTerm } = req.query;
+  const query = {
+    $or: [
+      { name: { $regex: new RegExp(searchTerm, "i") } }, // Case-insensitive search for name
+      { email: { $regex: new RegExp(searchTerm, "i") } }, // Case-insensitive search for email
+    ],
+  };
+
+  try {
+    const searchResult = await userCollection.find(query).toArray();
+    res.json(searchResult);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 
 
