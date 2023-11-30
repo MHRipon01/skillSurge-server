@@ -51,10 +51,10 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
+    // await client.db("admin").command({ ping: 1 });
+    // console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
@@ -315,13 +315,19 @@ app.get("/users", verifyToken, verifyAdmin, async (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const pageSize = parseInt(req.query.pageSize) || 10;
   const skip = (page - 1) * pageSize;
-
+  const searchTerm = req.query.search || ''
+  const query = {
+    $or: [
+      { name: { $regex: new RegExp(searchTerm, "i") } }, // Case-insensitive search for name
+      { email: { $regex: new RegExp(searchTerm, "i") } }, // Case-insensitive search for email
+    ],
+  };
   try {
     const totalDocuments = await userCollection.countDocuments();
     const totalPages = Math.ceil(totalDocuments / pageSize);
 
     const users = await userCollection
-      .find()
+      .find(query)
       .skip(skip)
       .limit(pageSize)
       .toArray();
@@ -785,7 +791,8 @@ app.get("/users/search", verifyToken, verifyAdmin, async (req, res) => {
       { email: { $regex: new RegExp(searchTerm, "i") } }, // Case-insensitive search for email
     ],
   };
-
+console.log('search term',searchTerm);
+console.log('query',query);
   try {
     const searchResult = await userCollection.find(query).toArray();
     res.json(searchResult);
@@ -793,7 +800,6 @@ app.get("/users/search", verifyToken, verifyAdmin, async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-
 
 
 
@@ -829,6 +835,13 @@ app.post("/addReview", async (req, res) => {
 
 //getting review to show on the homepage
 app.get('/allReviews' ,async(req,res) =>  {
+  const className = req.params;
+  // const query = {className: className };
+  const result = await reviewCollection.find(className).toArray()
+  res.send(result);
+})
+
+app.get('/allReviews/:className' ,async(req,res) =>  {
   const className = req.params;
   // const query = {className: className };
   const result = await reviewCollection.find(className).toArray()
