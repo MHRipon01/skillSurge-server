@@ -452,7 +452,7 @@ app.post("/teacherRequest", async (req, res) => {
 
 //getting requests for admin to approve or delete
 
-app.get("/teacherRequest",   async (req, res) => {
+app.get("/teacherRequest",verifyToken,   async (req, res) => {
   // console.log(req.headers);
   const result = await teacherRequestCollection.find().toArray();
   res.send(result);
@@ -524,7 +524,7 @@ app.patch("/users/madeTeacher/:email", verifyToken, verifyAdmin, async (req, res
 });
 
 //data for requester to be a teacher 
-app.get("/beTeacher/:email",  async (req, res) => {
+app.get("/beTeacher/:email",verifyToken,  async (req, res) => {
   const email = req.params.email;
   console.log(email);
  
