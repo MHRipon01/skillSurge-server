@@ -524,7 +524,7 @@ app.patch("/users/madeTeacher/:email", verifyToken, verifyAdmin, async (req, res
 });
 
 //data for requester to be a teacher 
-app.get("/beTeacher/:email",verifyToken,  async (req, res) => {
+app.get("/beTeacher/:email",  async (req, res) => {
   const email = req.params.email;
   console.log(email);
  

@@ -1,51 +1,49 @@
-# Project Title
 
-Short description or tagline about the project.
+## https://skill-surge.vercel.app//
 
-## Overview
+# Skillsurge
 
-Describe the project's purpose, functionality, and significance in facilitating online classes, teacher-student interactions, and payments.
+Skillsurge is an online education platform designed to offer a wide array of courses, facilitate user registration, class enrollment, teacher requests, payment processing, assignment submissions, and reviews.
 
-## Technology Stack
+## Key Features
 
-- Node.js
-- Express.js
-- MongoDB (for database storage)
-- Stripe (for payment processing)
-- JWT (for authentication)
+- **User Management:** Register, log in, and manage user roles (student, teacher, admin).
+- **Class Management:** Create, view, and manage classes, including enrollment, payment handling, and teacher requests.
+- **Payment Handling:** Process payments securely for class enrollment.
+- **Teacher Requests:** Users can request to become a teacher, requiring admin approval.
+- **Assignment Submissions:** Enables students to submit assignments for their enrolled classes.
+- **Reviews and Ratings:** Provides a platform for users to review and rate classes.
 
-## Database Structure
+## Project Objective
 
-Outline the database schema, collections, and their relationships, including user data, class information, enrollments, payments, and teacher requests.
+Skillsurge aims to create a comprehensive online education platform where users can access various courses, interact with teachers, enroll in classes, and engage within a supportive learning community.
 
-## Authentication & Authorization
+## Functionality Overview
 
-Explain the JWT-based authentication mechanism used for securing routes and managing user roles (student, teacher, admin).
+- **User Authentication:** Secure registration and login functionalities.
+- **Course Management:** Teachers can create, manage, and request approval for classes while admins oversee these requests.
+- **Enrollment & Payments:** Handles class enrollment and payment processes for students.
+- **Role-Based Access:** Admins control user roles and class approvals.
+- **Assignment Submissions:** Students can submit assignments related to enrolled classes.
+- **Review System:** Users can leave reviews and ratings for classes, aiding others in making informed choices.
 
-## Class Operations
+## Technologies Used
 
-- Retrieving all classes
-- Fetching specific class details
-- Handling pending class requests submitted by teachers
+- **Backend Framework:** Node.js with Express for server-side development and HTTP request handling.
+- **Database:** MongoDB for storing and managing user, class, payment, assignment, and review data.
+- **External Services:** Stripe integration for payment transactions.
+- **Authentication & Authorization:** JWT (JSON Web Tokens) for user authentication and authorization.
 
-## Payments Integration
+## Getting Started
 
-Integration of Stripe for handling payment intents and storing payment-related information in the database.
+1. Clone this repository.
+2. Set up environment variables as specified in `.env.example`.
+3. Run `npm install` to install dependencies.
+4. Start the server using `npm start`.
+5. Access the application through `http://localhost:5000` (or the specified port).
 
-## Role Management
+## Contributors
 
-Managing different user roles, allowing admins to approve teacher requests, change user roles, and manage user accounts.
-
-## Assignment Handling
-
-Managing assignments, including teacher assignment creation, student submissions, and daily counting of submissions.
-
-## Review System
-
-Allowing students to add reviews for classes and displaying these reviews on the homepage.
-
-## API Documentation
-
-Provide a brief description of API endpoints, expected parameters, and sample responses.
-
-Include any other relevant information, unique features, or setup instructions to help users understand and utilize the project effectively.
+- [MH Ripon](https://github.com/MHRipon01)
+ 
+ 
