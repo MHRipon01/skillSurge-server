@@ -39,7 +39,7 @@ Skillsurge aims to create a comprehensive online education platform where users 
 1. Clone this repository.
 2. Set up environment variables as specified in `.env.example`.
 3. Run `npm install` to install dependencies.
-4. Start the server using `npm start`.
+4. Start the server using `npm run dev`.
 5. Access the application through `http://localhost:5000` (or the specified port).
 
 ## Contributors
